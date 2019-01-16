@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/Intro Bot/Intro Bot.iml" filepath="$PROJECT_DIR$/Intro Bot/Intro Bot.iml" />
+      <module fileurl="file://$PROJECT_DIR$/pokerbots2019.iml" filepath="$PROJECT_DIR$/pokerbots2019.iml" />
+    </modules>
+  </component>
+</project>
