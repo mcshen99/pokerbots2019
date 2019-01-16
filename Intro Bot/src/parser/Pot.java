@@ -1,4 +1,4 @@
-package pokerbots.parser;
+package parser;
  
 
 // The Pot class represents the amount of money in the pot

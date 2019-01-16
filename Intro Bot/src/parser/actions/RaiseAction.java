@@ -1,9 +1,9 @@
-package pokerbots.parser.actions;
+package parser.actions;
 
-public class BetAction extends Action {
+public class RaiseAction extends Action {
     private int amount;
 
-    public BetAction(int amount) {
+    public RaiseAction(int amount) {
         this.amount = amount;
     }
 

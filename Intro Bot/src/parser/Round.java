@@ -1,4 +1,4 @@
-package pokerbots.parser;
+package parser;
  
 
 // The Round class represents a single round of the game above

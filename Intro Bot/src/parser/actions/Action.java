@@ -1,4 +1,4 @@
-package pokerbots.parser.actions;
+package parser.actions;
 
 // Organizer note: ensure these match
 // engine/src/pokerbots/engine/player/socketplayer/Parser.java

@@ -1,4 +1,4 @@
-package pokerbots.parser;
+package parser;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -10,7 +10,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
-import pokerbots.parser.actions.*;
+import parser.actions.*;
             
 public class Runner {
     private Socket socket;
@@ -50,19 +50,26 @@ public class Runner {
 
         String action = command[0];
 
-        if (action.equals("NEWGAME")) {
-            this.handleNewGame(command);
-        } else if (action.equals("NEWHAND")) {
-            this.handleNewHand(command);
-        } else if (action.equals("EXCHANGE")) {
-            this.handleExchange(command);
-        } else if (action.equals("GETACTION")) {
-            Action act = this.handleGetAction(command);
-            this.handleAction(act);
-        } else if (action.equals("HANDOVER")) {
-            this.handleHandOver(command);
-        } else if (action.equals("REQUESTKEYVALUES")) {
-            this.send("FINISH");
+        switch (action) {
+            case "NEWGAME":
+                this.handleNewGame(command);
+                break;
+            case "NEWHAND":
+                this.handleNewHand(command);
+                break;
+            case "EXCHANGE":
+                this.handleExchange(command);
+                break;
+            case "GETACTION":
+                Action act = this.handleGetAction(command);
+                this.handleAction(act);
+                break;
+            case "HANDOVER":
+                this.handleHandOver(command);
+                break;
+            case "REQUESTKEYVALUES":
+                this.send("FINISH");
+                break;
         }
     }
 
@@ -91,7 +98,7 @@ public class Runner {
         this.currentCards = command[3].split(",");
         int bankroll = Integer.parseInt(command[4]);
         int opponentBankroll = Integer.parseInt(command[5]);
-        this.moveHistory = new ArrayList<String>();
+        this.moveHistory = new ArrayList<>();
         this.currentPot = new Pot(
             (bigBlind) ? this.currentGame.bigBlind : (this.currentGame.bigBlind / 2),
             0,
@@ -114,7 +121,7 @@ public class Runner {
     private Set<Class<?>> getLegalMoves(String legalMoveString) {
         this.minAmount = 0;
         this.maxAmount = 0;
-        Set<Class<?>> result = new HashSet<Class<?>>();
+        Set<Class<?>> result = new HashSet<>();
 
         String[] legalMoveStrings = legalMoveString.split(";");
 
@@ -173,7 +180,7 @@ public class Runner {
         for (String move : newMoves) {
             if (move.startsWith("EXCHANGE")) {
                 String[] moveInfo = move.split(":");
-                if (moveInfo[moveInfo.length - 1] == this.currentGame.opponentName) {
+                if (moveInfo[moveInfo.length - 1].equals(this.currentGame.opponentName)) {
                     opponentNumExchanges += 1;
                 }
             } else if (move.startsWith("DEAL") || move.startsWith("WIN") || move.startsWith("TIE")) {

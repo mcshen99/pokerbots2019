@@ -1,1 +1,1 @@
-java -jar pokerbot.jar %1 
+java -cp pokerbot.jar Main %1

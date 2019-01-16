@@ -1,5 +1,5 @@
-package pokerbots.parser;
- 
+package parser;
+
 
 // The Game class represents a single match between two bots.
 //
@@ -10,25 +10,25 @@ package pokerbots.parser;
 // numRounds: the number of hands that will be played during this match
 // timeBank: the total amount of seconds your bot has to play this game.
 public class Game {
- 
+
    /** Property name */
    String name;
- 
+
    /** Property opponentName */
    String opponentName;
- 
+
    /** Property roundStack */
    int roundStack;
- 
+
    /** Property bigBlind */
    int bigBlind;
- 
+
    /** Property numHands */
    int numHands;
- 
+
    /** Property timeBank */
    float timeBank;
- 
+
    /**
     * Constructor
     */
@@ -40,42 +40,42 @@ public class Game {
       this.numHands = numHands;
       this.timeBank = timeBank;
    }
- 
+
    /**
     * Gets the name
     */
    public String getName() {
       return this.name;
    }
- 
+
    /**
     * Gets the opponentName
     */
    public String getOpponentName() {
       return this.opponentName;
    }
- 
+
    /**
     * Gets the roundStack
     */
    public int getRoundStack() {
       return this.roundStack;
    }
- 
+
    /**
     * Gets the bigBlind
     */
    public int getBigBlind() {
       return this.bigBlind;
    }
- 
+
    /**
     * Gets the numHands
     */
    public int getNumHands() {
       return this.numHands;
    }
- 
+
    /**
     * Gets the timeBank
     */

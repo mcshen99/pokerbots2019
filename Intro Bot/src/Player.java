@@ -1,35 +1,50 @@
-package pokerbots.parser;
-
-import pokerbots.parser.actions.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.Set;
+import parser.*;
+import parser.actions.*;
 
-public abstract class Bot {
+/**
+ * Simple example pokerbot, written in Java.
+ * 
+ * This is an example of a bare bones, pokerbot. It only sets up the socket
+ * necessary to connect with the engine and then always returns the same action.
+ * It is meant as an example of how a pokerbot should communicate with the
+ * engine.
+ * 
+ */
+public class Player extends Bot {
+
+	public Player() {}
 
     // Called when a new game starts. Called exactly once.
     //
     // Arguments:
-    // newGame: the pokerbots.parser.Game object.
+    // newGame: the parser.Game object.
     //
     // Returns:
     // Nothing.
-    public abstract void handleNewGame(Game newGame);
+    @Override
+    public void handleNewGame(Game newGame) {}
 
     // Called when a new round starts. Called Game.num_rounds times.
     //
     // Arguments:
-    // game: the pokerbots.parser.Game object.
-    // newRound: the pokerbots.parser.Round object.
+    // game: the parser.Game object.
+    // newRound: the parser.Round object.
     //
     // Returns:
     // Nothing.
-    public abstract void handleNewRound(Game game, Round newRound);
+    @Override
+    public void handleNewRound(Game game, Round newRound) {}
 
     // Called when a round ends. Called Game.num_rounds times.
     //
     // Arguments:
-    // game: the pokerbots.parser.Game object.
-    // round: the pokerbots.parser.Round object.
-    // pot: the pokerbots.parser.Pot object.
+    // game: the parser.Game object.
+    // round: the parser.Round object.
+    // pot: the parser.Pot object.
     // cards: the cards you held when the round ended.
     // opponentCards: the cards your opponent held when the round ended, or null if they never showed.
     // boardCards: the cards on the board when the round ended.
@@ -40,7 +55,8 @@ public abstract class Bot {
     //
     // Returns:
     // Nothing.
-    public abstract void handleRoundOver(
+    @Override
+    public void handleRoundOver(
         Game game,
         Round round,
         Pot pot,
@@ -51,36 +67,15 @@ public abstract class Bot {
         int newBankroll,
         int newOpponentBankroll,
         String[] moveHistory
-    );
-
-    // Returns the cost of performing a specific action.
-    public static int actionCost(Pot pot, Action action) {
-        if (action instanceof CheckAction) {
-            return 0;
-        } else if (action instanceof FoldAction) {
-            return 0;
-        } else if (action instanceof ExchangeAction) {
-            return 1 << (pot.getNumExchanges() + 1);
-        } else if (action instanceof CallAction) {
-            return pot.getOpponentBets() - pot.getBets() - pot.getPip();
-        } else if (action instanceof RaiseAction) {
-            RaiseAction ra = (RaiseAction) action;
-            return ra.getAmount() - pot.getPip();
-        } else if (action instanceof BetAction) {
-            BetAction ba = (BetAction) action;
-            return ba.getAmount() - pot.getPip();
-        }
-        return 0;
-    }
-
+    ) {}
 
     // Where the magic happens - your code should implement this function.
     // Called any time the server needs an action from your bot.
     //
     // Arguments:
-    // game: the pokerbots.parser.Game object.
-    // round: the pokerbots.parser.Round object.
-    // pot: the pokerbots.parser.Pot object.
+    // game: the parser.Game object.
+    // round: the parser.Round object.
+    // pot: the parser.Pot object.
     // cards: an array of your cards, in common format.
     // boardCards: an array of cards on the board. This list has length 0, 3, 4, or 5.
     // legalMoves: a set of the move classes that are legal to make.
@@ -91,7 +86,8 @@ public abstract class Bot {
     //
     // Returns:
     // Your bot's action
-    public abstract Action getAction(
+    @Override
+    public Action getAction(
         Game game,
         Round round,
         Pot pot,
@@ -102,6 +98,13 @@ public abstract class Bot {
         float timeLeft,
         int minAmount,
         int maxAmount
-    );
-}
+    ) {
+    	int cost = this.actionCost(pot, new CallAction());
 
+    	if (legalMoves.contains(CheckAction.class)) {
+    		return new CheckAction();
+    	} else {
+    		return new CallAction();
+    	}
+    }
+}

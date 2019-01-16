@@ -1,9 +1,6 @@
-package pokerbots.player;
-
 import java.io.IOException;
 import java.net.Socket;
-import pokerbots.parser.*;
-import pokerbots.parser.actions.*;
+import parser.*;
 
 public class Main {
 	
