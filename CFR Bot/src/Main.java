@@ -38,8 +38,7 @@ public class Main {
 		}
 		
 		try {
-			Socket socket = new Socket(host, port);
-			return socket;
+			return new Socket(host, port);
 		} catch (IOException e) {
 			System.out.println("Error connecting to host: " + e.getMessage());
 			return null;

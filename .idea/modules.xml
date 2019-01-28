@@ -2,7 +2,8 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/Intro Bot/Intro Bot.iml" filepath="$PROJECT_DIR$/Intro Bot/Intro Bot.iml" />
+      <module fileurl="file://$PROJECT_DIR$/CFR Bot/CFR Bot.iml" filepath="$PROJECT_DIR$/CFR Bot/CFR Bot.iml" />
+      <module fileurl="file://$PROJECT_DIR$/Check Call Bot/Check Call Bot.iml" filepath="$PROJECT_DIR$/Check Call Bot/Check Call Bot.iml" />
       <module fileurl="file://$PROJECT_DIR$/pokerbots2019.iml" filepath="$PROJECT_DIR$/pokerbots2019.iml" />
     </modules>
   </component>

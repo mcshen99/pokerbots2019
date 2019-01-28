@@ -1,0 +1,6 @@
+import os
+env = Environment(ENV = {'PATH' : os.environ['PATH']})
+
+compiled_classes = env.Java(target = 'out', source = 'src')
+env.Clean(compiled_classes, env.Dir('out'))
+new_jar = env.Jar(target = 'pokerbot.jar', source = 'out', JARCHDIR='$SOURCE')

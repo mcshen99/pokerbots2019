@@ -1,0 +1,1 @@
+java -cp pokerbot.jar Main "$@"
