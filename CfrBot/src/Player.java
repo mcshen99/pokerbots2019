@@ -143,7 +143,15 @@ public class Player extends Bot {
             int maxAmount
     ) {
 //    	int cost = this.actionCost(pot, new CallAction());
-
+//        Debug.println("MONEY: " + round.getBankroll() + " " + round.getOpponentBankroll());
+        if (round.getBankroll() > round.getOpponentBankroll() + (game.getNumHands() - round.getHandNum()) * 2) {
+//            Debug.println("I QUIT ");
+            if (legalMoves.contains(FoldAction.class)) {
+                return new FoldAction();
+            } else {
+                return new CheckAction();
+            }
+        }
         if (moveHistory[moveHistory.length - 1].startsWith("POST")) {
             Debug.println("AUTO CALL");
             return new CallAction();
