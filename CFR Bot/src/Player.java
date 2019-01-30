@@ -154,13 +154,13 @@ public class Player extends Bot {
 //        ArrayList<Card> cards = gameState.getBoardCards();
 //        Card[] hand = gameState.getHand();
         int[] playerCards = new int[cards.length + boardCards.length];
+        for (int i = 0; i < cards.length; i++) {
+            playerCards[i] = (new Card(cards[i])).getId();
+        }
         for (int i = 0; i < boardCards.length; i++) {
-            playerCards[i] = (new Card(boardCards[i])).getId();
+            playerCards[cards.length + i] = (new Card(boardCards[i])).getId();
         }
 
-        for (int i = 0; i < cards.length; i++) {
-            playerCards[boardCards.length + i] = (new Card(cards[i])).getId();
-        }
         String[] stringCards = new String[playerCards.length];
         for (int i = 0; i < playerCards.length; ++i) {
             stringCards[i] = new Card(playerCards[i]).toString();
@@ -201,13 +201,13 @@ public class Player extends Bot {
             return new CheckAction();
         }
         boolean isExchange = legalMoves.contains(ExchangeAction.class);
-        InfoSet infoSet = new InfoSet(handInfo, betSize, 0, boardCards.length, isExchange, allowed);
-        //PLAYER IS CURRENTLY ALWAYS SET AS 0
+        InfoSet infoSet = new InfoSet(handInfo, betSize, round.getBigBlind() ? 0 : 1, boardCards.length, isExchange, allowed);
         Debug.println(infoSet);
         Node node = tree.get(infoSet);
         while (node == null) {
             handInfo = handInfo.lowerQuality();
             if (handInfo == null) { // lowest quality info set not in tree
+                Debug.println("rip null");
                 if (legalMoves.contains(CheckAction.class)) {
                     return new CheckAction();
                 }
@@ -220,6 +220,7 @@ public class Player extends Bot {
             infoSet = new InfoSet(infoSet, handInfo);
             node = tree.get(infoSet);
         }
+        Debug.println("NOT NULL");
 
         ArrayList<Act> validActions = infoSet.getValidActions();
         Debug.println(validActions);

@@ -8,7 +8,7 @@ import java.util.Arrays;
 public class TrainingState implements Cloneable {
     private static final int MAX_BOARD_CARDS = 5;
     private static final int HAND_SIZE = 2;
-    private static final int MAX_TURNS = 3;
+    private static final int MAX_TURNS = 2;
     private int[] cards;
     private int boardSize;
     private boolean isExchange;
