@@ -145,7 +145,7 @@ public class Player extends Bot {
 //    	int cost = this.actionCost(pot, new CallAction());
 //        Debug.println("MONEY: " + round.getBankroll() + " " + round.getOpponentBankroll());
         if (round.getBankroll() > round.getOpponentBankroll() + (game.getNumHands() - round.getHandNum()) * 2) {
-//            Debug.println("I QUIT ");
+            Debug.println("I QUIT ");
             if (legalMoves.contains(FoldAction.class)) {
                 return new FoldAction();
             } else {
@@ -183,7 +183,7 @@ public class Player extends Bot {
         int betSize = 2;
         int stackSize = 400;
         int epsilon = 10;
-        if (amount < epsilon) { // TODO: when we add more bet sizes, need to edit
+        if (amount < epsilon) {
             betSize = 0;
         } else if (amount <= (potSize - amount) * 2 / 3) {
             betSize = 1;

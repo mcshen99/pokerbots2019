@@ -1,7 +1,7 @@
 package util;
 
 public class Debug {
-    public static boolean DEBUG = true;
+    public static boolean DEBUG = false;
 
     public static void println(Object input) {
         if (DEBUG) {

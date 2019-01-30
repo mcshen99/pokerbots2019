@@ -81,16 +81,14 @@ public class Trainer {
         return player == 0 ? nodeUtil : -nodeUtil;
     }
 
-    public GameTree getTree() {
-        return tree;
-    }
-
     public static void main(String[] args) throws IOException {
-        int iterations = 5000;
+        long startTime = System.currentTimeMillis();
+        int iterations = 60000;
         new Trainer().train(iterations);
+        long runTime = System.currentTimeMillis() - startTime;
+        System.out.println(runTime + " ms");
         PrintWriter out = new PrintWriter(new FileWriter("trainingData.txt"));
         out.print(tree.toString());
         out.close();
     }
-
 }
