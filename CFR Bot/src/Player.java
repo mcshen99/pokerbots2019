@@ -12,12 +12,11 @@ import util.Debug;
 
 /**
  * Simple example pokerbot, written in Java.
- * 
+ * <p>
  * This is an example of a bare bones, pokerbot. It only sets up the socket
  * necessary to connect with the engine and then always returns the same action.
  * It is meant as an example of how a pokerbot should communicate with the
  * engine.
- * 
  */
 public class Player extends Bot {
     private Random random;
@@ -67,7 +66,8 @@ public class Player extends Bot {
     // Returns:
     // Nothing.
     @Override
-    public void handleNewGame(Game newGame) {}
+    public void handleNewGame(Game newGame) {
+    }
 
     // Called when a new round starts. Called Game.num_rounds times.
     //
@@ -78,7 +78,8 @@ public class Player extends Bot {
     // Returns:
     // Nothing.
     @Override
-    public void handleNewRound(Game game, Round newRound) {}
+    public void handleNewRound(Game game, Round newRound) {
+    }
 
     // Called when a round ends. Called Game.num_rounds times.
     //
@@ -98,17 +99,18 @@ public class Player extends Bot {
     // Nothing.
     @Override
     public void handleRoundOver(
-        Game game,
-        Round round,
-        Pot pot,
-        String[] cards,
-        String[] opponentCards,
-        String[] boardCards,
-        String result,
-        int newBankroll,
-        int newOpponentBankroll,
-        String[] moveHistory
-    ) {}
+            Game game,
+            Round round,
+            Pot pot,
+            String[] cards,
+            String[] opponentCards,
+            String[] boardCards,
+            String result,
+            int newBankroll,
+            int newOpponentBankroll,
+            String[] moveHistory
+    ) {
+    }
 
     // Where the magic happens - your code should implement this function.
     // Called any time the server needs an action from your bot.
@@ -129,16 +131,16 @@ public class Player extends Bot {
     // Your bot's action
     @Override
     public Action getAction(
-        Game game,
-        Round round,
-        Pot pot,
-        String[] cards,
-        String[] boardCards,
-        Set<Class<?>> legalMoves,
-        String[] moveHistory,
-        float timeLeft,
-        int minAmount,
-        int maxAmount
+            Game game,
+            Round round,
+            Pot pot,
+            String[] cards,
+            String[] boardCards,
+            Set<Class<?>> legalMoves,
+            String[] moveHistory,
+            float timeLeft,
+            int minAmount,
+            int maxAmount
     ) {
 //    	int cost = this.actionCost(pot, new CallAction());
 
@@ -170,19 +172,22 @@ public class Player extends Bot {
         int potSize = pot.getGrandTotal();
 
         Debug.println("history: " + Arrays.toString(moveHistory));
-        int betSize = 1;
+        int betSize = 2;
         int stackSize = 400;
-        if (amount < 10) { // TODO: when we add more bet sizes, need to edit
+        int epsilon = 10;
+        if (amount < epsilon) { // TODO: when we add more bet sizes, need to edit
             betSize = 0;
-        } else if (stackSize - (pot.getOpponentTotal()) < amount) { // bet more than 1/2 remaining stack
-            betSize = 2;
+        } else if (amount <= (potSize - amount) * 2 / 3) {
+            betSize = 1;
+        } else if (amount > stackSize - pot.getOpponentTotal() - epsilon) {
+            betSize = 3;
         }
 
         int allowed = 2;
         int dealIndex = dealIndex(moveHistory);
         int remaining = stackSize - pot.getTotal();
         Debug.println(remaining + " " + dealIndex + " " + amount);
-        if (remaining == 0) {
+        if (remaining == 0 || pot.getOpponentTotal() == stackSize) {
             allowed = 0;
         } else if (dealIndex >= 0) {
             allowed = 1;
@@ -196,7 +201,8 @@ public class Player extends Bot {
             return new CheckAction();
         }
         boolean isExchange = legalMoves.contains(ExchangeAction.class);
-        InfoSet infoSet = new InfoSet(handInfo, betSize, round.getBigBlind() ? 0 : 1, boardCards.length, isExchange, allowed);
+        InfoSet infoSet = new InfoSet(handInfo, betSize, 0, boardCards.length, isExchange, allowed);
+        //PLAYER IS CURRENTLY ALWAYS SET AS 0
         Debug.println(infoSet);
         Node node = tree.get(infoSet);
         while (node == null) {
@@ -221,7 +227,7 @@ public class Player extends Bot {
         for (int i = 0; i < validActions.size(); ++i) {
             Act action = validActions.get(i);
             int actionAmount = action.getAmount();
-            switch(action.getMove()) {
+            switch (action.getMove()) {
                 case EXCHANGE:
                     actions[i] = new ExchangeAction();
                     break;
@@ -237,21 +243,27 @@ public class Player extends Bot {
                     break;
                 case BET:
                     String lastMove = moveHistory[moveHistory.length - 1];
-                    if (!lastMove.startsWith("RAISE") && !lastMove.startsWith("BET")) {
+                    if (!lastMove.startsWith("RAISE") && !lastMove.startsWith("BET")) { //betting
                         if (actionAmount == 1) {
-                            actions[i] = new BetAction(Math.max(Math.min(potSize, maxAmount), minAmount));
-                        } else if (actionAmount == 2) {
+                            int num = potSize * 5 / 3;
+                            actions[i] = new BetAction(Math.max(Math.min(num, maxAmount), minAmount));
+                        } else if (actionAmount == 2) { // bet by pot
+                            int num = Math.max(potSize * 2, stackSize / 2 - pot.getTotal());
+                            actions[i] = new BetAction(Math.max(Math.min(num, maxAmount), minAmount));
+                        } else if (actionAmount == 3) {
                             actions[i] = new BetAction(maxAmount);
                         }
-                    } else {
-                        if (actionAmount == 2) {
+                    } else { //raising
+                        if (actionAmount == 3) {
                             actions[i] = new RaiseAction(maxAmount);
+                        } else if (dealIndex < 0) {
+                            actions[i] = new CallAction();
                         } else if (actionAmount == 1) {
-                            if (dealIndex >= 0) {
-                                actions[i] = new RaiseAction(Math.max(Math.min(potSize, maxAmount), minAmount));
-                            } else {
-                                actions[i] = new CallAction();
-                            }
+                            int num = potSize * 5 / 3;
+                            actions[i] = new RaiseAction(Math.max(Math.min(num, maxAmount), minAmount));
+                        } else if (actionAmount == 2) {
+                            int num = Math.max(potSize * 2, stackSize / 2 - pot.getTotal());
+                            actions[i] = new RaiseAction(Math.max(Math.min(num, maxAmount), minAmount));
                         }
                     }
                     break;
@@ -274,7 +286,7 @@ public class Player extends Bot {
         }
         Debug.println(legalMoves);
         Debug.println("MY ACTION: " + actions[index - 1].toString());
-        return actions[index-1];
+        return actions[index - 1];
     }
 
     public boolean canExchange(String[] moveHistory) {

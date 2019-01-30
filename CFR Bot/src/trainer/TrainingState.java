@@ -1,21 +1,13 @@
 package trainer;
 
+import parser.actions.BetAction;
 import util.HandUtil;
 
 import java.util.Arrays;
 
 public class TrainingState implements Cloneable {
-    public static int getMaxBoardCards() {
-        return MAX_BOARD_CARDS;
-    }
-
     private static final int MAX_BOARD_CARDS = 5;
     private static final int HAND_SIZE = 2;
-
-    public static int getMaxTurns() {
-        return MAX_TURNS;
-    }
-
     private static final int MAX_TURNS = 3;
     private int[] cards;
     private int boardSize;
@@ -169,31 +161,37 @@ public class TrainingState implements Cloneable {
     }
 
 
-    public int toRealBetSize(int betSize, int player) {
+    public int toRealBetSize(int betSize, int player) { //3 is all, 2 is a lot, 1 is a little, 0 is (basically) none
         int potSize = potSizes[0] + potSizes[1];
         int remaining = stackSize - potSizes[1-player];
 
-        if (betSize == 2) {
+        if (betSize == 3) {
             return remaining;
+        } else if (betSize == 0) {
+            return 0;
+        } else if (betSize == 1) {
+            return potSize * 2 / 3;
+        } else { //betSize = 2
+            return Math.min(Math.max(potSize, stackSize / 2 - potSizes[1-player]), remaining);
         }
-
-        assert potSize / 2 >= minRaise && potSize / 2 < remaining;
-        assert betSize == 1;
-        return potSize / 2;
     }
 
-    // From the real bet size, simplify to 0, 1, 2 for 0, 50% pot, all in
+    // From the real bet size, simplify to 0 for 0, 1 for 2/3, 2 for pot or 1/2 stack, 3 for all in
     public int simplifyBetSize(int player) {
-        int betSize = betSizes[player];
+        int betSize = betSizes[player]; //how much the player has ACTUALLY bet overall
 
         if (betSize != 0 && stackSize == potSizes[player]) {
-            return 2;
+            return 3;
         }
 
         if (betSize == 0) {
             return 0;
         }
-        return 1;
+
+        if (betSize == (potSizes[0] + potSizes[1]) * 2 / 3) {
+            return 1;
+        }
+        return 2;
     }
 
     public int getAllowedBetSize() {
@@ -202,7 +200,7 @@ public class TrainingState implements Cloneable {
             return 0;
         }
 
-        if (numTurns < MAX_TURNS) {
+        if (numTurns < MAX_TURNS) { // have not reraised too many times
             return 1;
         }
         return 2;
@@ -229,5 +227,13 @@ public class TrainingState implements Cloneable {
         } else {
             return 1;
         }
+    }
+
+    public static int getMaxBoardCards() {
+        return MAX_BOARD_CARDS;
+    }
+
+    public static int getMaxTurns() {
+        return MAX_TURNS;
     }
 }
