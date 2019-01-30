@@ -140,8 +140,15 @@ public class Player extends Bot {
         int minAmount,
         int maxAmount
     ) {
-    	int cost = this.actionCost(pot, new CallAction());
+//    	int cost = this.actionCost(pot, new CallAction());
 
+        if (moveHistory[moveHistory.length - 1].startsWith("POST")) {
+            Debug.println("AUTO CALL");
+            return new CallAction();
+        } else if (moveHistory[moveHistory.length - 1].startsWith("CALL") && moveHistory[moveHistory.length - 2].startsWith("POST")) {
+            Debug.println("AUTO CHECK");
+            return new CheckAction();
+        }
 //        ArrayList<Card> cards = gameState.getBoardCards();
 //        Card[] hand = gameState.getHand();
         int[] playerCards = new int[cards.length + boardCards.length];
@@ -152,40 +159,44 @@ public class Player extends Bot {
         for (int i = 0; i < cards.length; i++) {
             playerCards[boardCards.length + i] = (new Card(cards[i])).getId();
         }
+        String[] stringCards = new String[playerCards.length];
+        for (int i = 0; i < playerCards.length; ++i) {
+            stringCards[i] = new Card(playerCards[i]).toString();
+        }
+        Debug.println("cards: " + Arrays.toString(stringCards));
 
         HandInfo handInfo = HandInfo.getHandInfo(playerCards);
-        String lastAction = moveHistory[moveHistory.length - 1];
-        int amount = 0;
+        int amount = pot.getOpponentBets() - pot.getBets();
         int potSize = pot.getGrandTotal();
-        if (lastAction.startsWith("BET") || lastAction.startsWith("RAISE") || lastAction.startsWith("POST")) {
-            String[] split = lastAction.split(":");
-            amount = Integer.parseInt(split[1]);
-        }
-//
+
+        Debug.println("history: " + Arrays.toString(moveHistory));
         int betSize = 1;
-        int stackSize = 200;
-        if (2 * amount < potSize) {
+        int stackSize = 400;
+        if (amount < 10) { // TODO: when we add more bet sizes, need to edit
             betSize = 0;
-        } else if (stackSize - (potSize - amount) / 2 < 2 * amount) { // beginning stack - how much he bet before putting in amount
+        } else if (stackSize - (pot.getOpponentTotal()) < amount) { // bet more than 1/2 remaining stack
             betSize = 2;
         }
-//         if villain has bet < 1/2 pot , then betsize = 0
-//         if villain has bet > 1/2 stacksize, then betsize = 2
-//         otherwise 1
 
         int allowed = 2;
-        int remaining = stackSize - (potSize + amount) / 2;
+        int dealIndex = dealIndex(moveHistory);
+        int remaining = stackSize - pot.getTotal();
+        Debug.println(remaining + " " + dealIndex + " " + amount);
         if (remaining == 0) {
             allowed = 0;
-        } else if (potSize / 2 >= (potSize + amount) / 2 && potSize / 2 < remaining) {
+        } else if (dealIndex >= 0) {
             allowed = 1;
         }
+
 //        GameTree tree = trainer.getTree();
         // don't want to get into exchange loop assume only exchange once per round of betting
         if (legalMoves.contains(ExchangeAction.class) && !canExchange(moveHistory)) {
+            Debug.println(legalMoves);
+            Debug.println("MY ACTION: " + (new CheckAction()).toString());
             return new CheckAction();
         }
-        InfoSet infoSet = new InfoSet(handInfo, betSize, round.getBigBlind() ? 1 : 0, boardCards.length, legalMoves.contains(ExchangeAction.class), allowed);
+        boolean isExchange = legalMoves.contains(ExchangeAction.class);
+        InfoSet infoSet = new InfoSet(handInfo, betSize, round.getBigBlind() ? 0 : 1, boardCards.length, isExchange, allowed);
         Debug.println(infoSet);
         Node node = tree.get(infoSet);
         while (node == null) {
@@ -194,7 +205,7 @@ public class Player extends Bot {
                 if (legalMoves.contains(CheckAction.class)) {
                     return new CheckAction();
                 }
-                if (amount < stackSize / 2) {
+                if (amount < stackSize / 40) {
                     return new CallAction();
                 } else {
                     return new FoldAction();
@@ -215,24 +226,33 @@ public class Player extends Bot {
                     actions[i] = new ExchangeAction();
                     break;
                 case CHECK:
-                    actions[i] = new CheckAction();
+                    if (!isExchange && betSize == 0 && amount != 0) {
+                        actions[i] = new CallAction();
+                    } else {
+                        actions[i] = new CheckAction();
+                    }
                     break;
                 case CALL:
                     actions[i] = new CallAction();
                     break;
-                case RAISE:
-                    if (actionAmount == 2) {
-                        int num = stackSize - (potSize - amount) / 2;
-                        actions[i] = new RaiseAction(num);
-                    }
-                    break;
                 case BET:
-                    if (actionAmount == 1) {
-                        int num = potSize / 2;
-                        actions[i] = new BetAction(num);
-                    } else if (actionAmount == 2) {
-                        int num = stackSize - potSize / 2;
-                        actions[i] = new BetAction(num);
+                    String lastMove = moveHistory[moveHistory.length - 1];
+                    if (!lastMove.startsWith("RAISE") && !lastMove.startsWith("BET")) {
+                        if (actionAmount == 1) {
+                            actions[i] = new BetAction(Math.max(Math.min(potSize, maxAmount), minAmount));
+                        } else if (actionAmount == 2) {
+                            actions[i] = new BetAction(maxAmount);
+                        }
+                    } else {
+                        if (actionAmount == 2) {
+                            actions[i] = new RaiseAction(maxAmount);
+                        } else if (actionAmount == 1) {
+                            if (dealIndex >= 0) {
+                                actions[i] = new RaiseAction(Math.max(Math.min(potSize, maxAmount), minAmount));
+                            } else {
+                                actions[i] = new CallAction();
+                            }
+                        }
                     }
                     break;
                 case FOLD:
@@ -241,6 +261,7 @@ public class Player extends Bot {
             }
         }
 
+        Debug.println(Arrays.toString(actions));
         Debug.println(node);
         double[] strategy = node.getAverageStrategy();
         Debug.println(Arrays.toString(strategy));
@@ -251,6 +272,8 @@ public class Player extends Bot {
             sum += strategy[index];
             index++;
         }
+        Debug.println(legalMoves);
+        Debug.println("MY ACTION: " + actions[index - 1].toString());
         return actions[index-1];
     }
 
@@ -260,11 +283,24 @@ public class Player extends Bot {
             if (action.startsWith("DEAL")) {
                 return true;
             }
-            if (action.startsWith("EXCHANGE") && (moveHistory.length - i) % 2 == 0) {
+            if ((moveHistory.length - i) % 2 == 0 && action.startsWith("EXCHANGE")) {
                 return false;
             }
         }
 
         return true;
+    }
+
+    public int dealIndex(String[] moveHistory) {
+        for (int i = moveHistory.length - 1; i >= 0; --i) {
+            if (moveHistory[i].startsWith("DEAL")) {
+                if (moveHistory.length - i <= 2 * TrainingState.getMaxTurns() + 1) {
+                    return 0;
+                } else {
+                    return 1;
+                }
+            }
+        }
+        return -1;
     }
 }

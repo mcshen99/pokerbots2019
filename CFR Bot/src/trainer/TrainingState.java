@@ -5,11 +5,21 @@ import util.HandUtil;
 import java.util.Arrays;
 
 public class TrainingState implements Cloneable {
+    public static int getMaxBoardCards() {
+        return MAX_BOARD_CARDS;
+    }
+
     private static final int MAX_BOARD_CARDS = 5;
     private static final int HAND_SIZE = 2;
+
+    public static int getMaxTurns() {
+        return MAX_TURNS;
+    }
+
+    private static final int MAX_TURNS = 3;
     private int[] cards;
     private int boardSize;
-    private int numExchange;
+    private boolean isExchange;
     private int player;
     private int[] cardIndex;
     private int[] potSizes;
@@ -17,6 +27,7 @@ public class TrainingState implements Cloneable {
     private int minRaise;
     private int[] betSizes;
     private int winner; // -1 if no winner
+    private int numTurns;
 
     public TrainingState(int[] cards, int[] potSizes, int stackSize) {
         this(cards, potSizes, stackSize, new int[]{0, 0});
@@ -25,7 +36,7 @@ public class TrainingState implements Cloneable {
     public TrainingState(int[] cards, int[] potSizes, int stackSize, int[] betSizes) {
         this.cards = cards;
         boardSize = 0;
-        numExchange = 0;
+        isExchange = false;
         player = 0;
         cardIndex = new int[]{5, 9};
         this.potSizes = potSizes;
@@ -33,6 +44,7 @@ public class TrainingState implements Cloneable {
         minRaise = Trainer.BIG_BLIND;
         this.betSizes = betSizes;
         winner = -1;
+        numTurns = 0;
     }
 
     @Override
@@ -40,7 +52,7 @@ public class TrainingState implements Cloneable {
         return "trainer.TrainingState{" +
                 "cards=" + Arrays.toString(cards) +
                 ", boardSize=" + boardSize +
-                ", numExchange=" + numExchange +
+                ", isExchange=" + isExchange +
                 ", player=" + player +
                 ", cardIndex=" + Arrays.toString(cardIndex) +
                 ", potSizes=" + Arrays.toString(potSizes) +
@@ -60,10 +72,10 @@ public class TrainingState implements Cloneable {
         if (boardSize >= 0) System.arraycopy(cards, 0, playerCards, 0, boardSize);
 
         int p = getPlayer();
-        System.arraycopy(cards, cardIndex[p] + 0, playerCards, boardSize + 0, HAND_SIZE);
+        System.arraycopy(cards, cardIndex[p], playerCards, boardSize, HAND_SIZE);
 
         return new InfoSet(HandInfo.getHandInfo(playerCards), simplifyBetSize(1-player), player,
-                boardSize, (numExchange > 0), getAllowedBetSize());
+                boardSize, isExchange, getAllowedBetSize());
     }
 
     public TrainingState makeMove(Act act) {
@@ -72,19 +84,20 @@ public class TrainingState implements Cloneable {
         state.boardSize = boardSize;
         state.cardIndex = new int[]{cardIndex[0], cardIndex[1]};
         switch (move) {
-            case EXCHANGE: //assume can only exchange once
+            case EXCHANGE: // assume can only exchange once
                 state.cardIndex[player] = cardIndex[player] + 2;
                 if (player == 0) {
-                    state.numExchange = 1;
+                    state.isExchange = true;
                 }
                 state.player = 1 - player;
                 break;
             case CHECK:
-                if (numExchange > 0) {
+                if (isExchange) {
                     if (player == 0) {
-                        state.numExchange = 1;
+                        state.isExchange = true;
                     }
                 } else if (player == 1) {
+                    state.numTurns = numTurns + 1;
                     if (boardSize == 0) {
                         state.boardSize = 3;
                     } else if (boardSize == 3 || boardSize == 4) {
@@ -96,47 +109,44 @@ public class TrainingState implements Cloneable {
                     }
 
                     if (boardSize == 0 || boardSize == 3) {
-                        state.numExchange = 1;
+                        state.isExchange = true;
                     }
                 }
                 state.player = 1 - player;
                 break;
             case CALL:
                 state.potSizes[player] = potSizes[1 - player];
+                state.numTurns = numTurns + 1;
                 if (boardSize == 0) {
                     if (player == 0 && potSizes[1] == Trainer.BIG_BLIND) { // very beginning of game
                         state.player = 1 - player;
                     } else {
                         state.boardSize = 3;
                         state.player = 0;
-                        state.numExchange = 1;
+                        state.isExchange = true;
                     }
                 } else if (boardSize == 3 || boardSize == 4) {
                     state.boardSize += 1;
                     state.player = 0;
                     if (boardSize == 3) {
-                        state.numExchange = 1;
+                        state.isExchange = true;
                     }
                 } else {
                     state.winner = getWinner();
                     state.player = 1 - player;
                 }
                 break;
-            case RAISE:
+            case BET:
                 state.betSizes[player] = toRealBetSize(act.getAmount(), player);
                 state.minRaise = state.betSizes[player];
                 state.potSizes[player] = state.potSizes[1 - player] + state.betSizes[player];
                 state.player = 1 - player;
-                break;
-            case BET:
-                state.betSizes[player] = toRealBetSize(act.getAmount(), player);
-                state.minRaise = state.betSizes[player];
-                state.potSizes[player] += state.betSizes[player];
-                state.player = 1 - player;
+                state.numTurns = numTurns + 1;
                 break;
             case FOLD:
                 state.winner = 1 - player;
                 state.player = 1 - player;
+                state.numTurns = numTurns + 1;
                 break;
         }
         assert state.betSizes[0] == 0 || state.betSizes[1] == 0;
@@ -192,8 +202,7 @@ public class TrainingState implements Cloneable {
             return 0;
         }
 
-        int potSize = potSizes[0] + potSizes[1];
-        if (potSize / 2 >= minRaise && potSize / 2 < remaining) {
+        if (numTurns < MAX_TURNS) {
             return 1;
         }
         return 2;

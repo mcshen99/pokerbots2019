@@ -5,11 +5,11 @@ import java.util.Objects;
 
 public class InfoSet {
     private HandInfo handInfo;
-    private int betSize; // bet size is of the other person
+    private int betSize; // bet size is of the other person // TODO: add 0-3 bet sizes (none, little, a lot, all)
     private int player;
     private int boardSize;
     private boolean isExchange;
-    private int allowedBetSize;
+    private int allowedBetSize; // 012 - check, 1 - bet some, 12 - bet all
 
     public ArrayList<Act> getValidActions() {
         ArrayList<Act> acts = new ArrayList<>();
@@ -23,7 +23,7 @@ public class InfoSet {
             if (allowedBetSize == 1) {
                 acts.add(new Act(Act.Move.BET, 1));
             }
-            if (allowedBetSize > 0) {
+            if (allowedBetSize > 0 && boardSize == TrainingState.getMaxBoardCards()) {
                 acts.add(new Act(Act.Move.BET, 2));
             }
             acts.add(new Act(Act.Move.CHECK, 0));
@@ -37,8 +37,13 @@ public class InfoSet {
         }
 
         acts.add(new Act(Act.Move.CALL, 0));
-        acts.add(new Act(Act.Move.RAISE, 2));
+        if (boardSize == TrainingState.getMaxBoardCards()) {
+            acts.add(new Act(Act.Move.BET, 2));
+        }
         acts.add(new Act(Act.Move.FOLD, 0));
+        if (allowedBetSize == 1) {
+            acts.add(new Act(Act.Move.BET, 1));
+        }
         return acts;
     }
 

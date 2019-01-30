@@ -32,8 +32,8 @@ public class Trainer {
             }
 
             util += cfr(new TrainingState(cards.clone(), INITIAL_POT_SIZES, STACK_SIZE), 1, 1);
-            if (i % 10 == 0) {
-                Debug.println(i);
+            if (i % 100 == 0) {
+                System.out.println(i / 100);
             }
         }
         Debug.println("Average game value: " + util / iterations);
@@ -86,7 +86,7 @@ public class Trainer {
     }
 
     public static void main(String[] args) throws IOException {
-        int iterations = 10000;
+        int iterations = 1000;
         new Trainer().train(iterations);
         PrintWriter out = new PrintWriter(new FileWriter("trainingData.txt"));
         out.print(tree.toString());

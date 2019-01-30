@@ -10,4 +10,11 @@ public class BetAction extends Action {
     public int getAmount() {
         return this.amount;
     }
+
+    @Override
+    public String toString() {
+        return "BetAction{" +
+                "amount=" + amount +
+                '}';
+    }
 }

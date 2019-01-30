@@ -237,7 +237,7 @@ public class Runner {
             }
         }
 
-        Debug.println("MY ACTION: " + action.getClass());
+        Debug.println("MY REAL ACTION: " + action.getClass());
         return action;
     }
 

@@ -2,7 +2,7 @@ package trainer;
 
 public class Act {
     public enum Move {
-        EXCHANGE, CHECK, CALL, RAISE, BET, FOLD
+        EXCHANGE, CHECK, CALL, BET, FOLD
     }
     private Move move;
     private int amount; // amount of money

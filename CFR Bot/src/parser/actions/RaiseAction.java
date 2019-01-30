@@ -10,4 +10,11 @@ public class RaiseAction extends Action {
     public int getAmount() {
         return this.amount;
     }
+
+    @Override
+    public String toString() {
+        return "RaiseAction{" +
+                "amount=" + amount +
+                '}';
+    }
 }
