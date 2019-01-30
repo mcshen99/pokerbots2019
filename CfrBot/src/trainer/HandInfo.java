@@ -1,12 +1,13 @@
 package trainer;
 
-import util.HandQuality;
-import util.HandUtil;
-
-import java.util.HashSet;
+import util.HandUtility;
 import java.util.Objects;
 
 public class HandInfo {
+    public enum HandQuality {
+        HIGH_NUM, HIGH_AKQJ, PAIR_NUM, PAIR_AKQJ, TWO_PAIR, TRIPS, STRAIGHT, FLUSH, FULL_HOUSE, QUADS, STRAIGHT_FLUSH
+        // No one cares about royals.
+    }
     private HandQuality quality;
 
     @Override
@@ -35,11 +36,17 @@ public class HandInfo {
 
     public HandInfo(String quality) {
         switch (quality) {
-            case "HIGH":
-                this.quality = HandQuality.HIGH;
+            case "HIGH_NUM":
+                this.quality = HandQuality.HIGH_NUM;
                 break;
-            case "PAIR":
-                this.quality = HandQuality.PAIR;
+            case "HIGH_AKQJ":
+                this.quality = HandQuality.HIGH_AKQJ;
+                break;
+            case "PAIR_NUM":
+                this.quality = HandQuality.PAIR_NUM;
+                break;
+            case "PAIR_AKQJ":
+                this.quality = HandQuality.PAIR_AKQJ;
                 break;
             case "TWO_PAIR":
                 this.quality = HandQuality.TWO_PAIR;
@@ -66,13 +73,6 @@ public class HandInfo {
     }
 
     public static HandInfo getHandInfo(int[] cards) {
-        return new HandInfo(HandUtil.getQuality(cards));
-    }
-
-    public HandInfo lowerQuality() {
-        if (quality.ordinal() >= 1) {
-            return new HandInfo(HandQuality.values()[quality.ordinal() - 1]);
-        }
-        return null;
+        return new HandInfo(HandUtility.getQuality(cards));
     }
 }

@@ -1,13 +1,15 @@
 package util;
 
+import trainer.HandInfo;
+
 import java.util.Arrays;
 import java.util.Objects;
 
 public class HandStrength implements Comparable<HandStrength>{
-    private HandQuality quality;
+    private HandInfo.HandQuality quality;
     private int[] tieBreak;
 
-    public HandQuality getQuality() {
+    public HandInfo.HandQuality getQuality() {
         return quality;
     }
 
@@ -15,7 +17,7 @@ public class HandStrength implements Comparable<HandStrength>{
         return tieBreak;
     }
 
-    public HandStrength(HandQuality quality, int[] tieBreak) {
+    public HandStrength(HandInfo.HandQuality quality, int[] tieBreak) {
         this.quality = quality;
         this.tieBreak = tieBreak;
     }

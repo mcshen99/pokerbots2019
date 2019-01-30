@@ -1,7 +1,6 @@
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.*;
 
 import parser.*;
@@ -54,6 +53,7 @@ public class Player extends Bot {
             tree.put(infoSet, node);
         }
         Debug.println(tree.size());
+        Debug.println(tree.toString());
 
         random = new Random(12345);
     }
@@ -205,9 +205,12 @@ public class Player extends Bot {
         Debug.println(infoSet);
         Node node = tree.get(infoSet);
         while (node == null) {
-            handInfo = handInfo.lowerQuality();
-            if (handInfo == null) { // lowest quality info set not in tree
-                Debug.println("rip null");
+            allowed -= 1;
+            Debug.println(allowed);
+            if (allowed < 0) {
+                if (!isExchange) {
+                    Debug.println("rip null");
+                }
                 if (legalMoves.contains(CheckAction.class)) {
                     return new CheckAction();
                 }
@@ -217,7 +220,7 @@ public class Player extends Bot {
                     return new FoldAction();
                 }
             }
-            infoSet = new InfoSet(infoSet, handInfo);
+            infoSet = new InfoSet(infoSet, allowed);
             node = tree.get(infoSet);
         }
         Debug.println("NOT NULL");
@@ -233,7 +236,7 @@ public class Player extends Bot {
                     actions[i] = new ExchangeAction();
                     break;
                 case CHECK:
-                    if (!isExchange && betSize == 0 && amount != 0) {
+                    if (!isExchange && betSize == 0 && amount > 0) {
                         actions[i] = new CallAction();
                     } else {
                         actions[i] = new CheckAction();

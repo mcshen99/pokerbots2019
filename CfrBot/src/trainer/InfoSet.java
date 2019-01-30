@@ -62,8 +62,8 @@ public class InfoSet {
         this.allowedBetSize = allowedBetSize;
     }
 
-    public InfoSet(InfoSet other, HandInfo handInfo) {
-        this(handInfo, other.betSize, other.player, other.boardSize, other.isExchange, other.allowedBetSize);
+    public InfoSet(InfoSet other, int allowedBetSize) {
+        this(other.handInfo, other.betSize, other.player, other.boardSize, other.isExchange, allowedBetSize);
     }
 
     @Override

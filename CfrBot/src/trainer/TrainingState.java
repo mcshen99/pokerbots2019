@@ -1,7 +1,6 @@
 package trainer;
 
-import parser.actions.BetAction;
-import util.HandUtil;
+import util.HandUtility;
 
 import java.util.Arrays;
 
@@ -61,10 +60,9 @@ public class TrainingState implements Cloneable {
 
     public InfoSet getInfoSet() {
         int[] playerCards = new int[boardSize + HAND_SIZE];
-        if (boardSize >= 0) System.arraycopy(cards, 0, playerCards, 0, boardSize);
-
         int p = getPlayer();
-        System.arraycopy(cards, cardIndex[p], playerCards, boardSize, HAND_SIZE);
+        System.arraycopy(cards, cardIndex[p], playerCards, 0, HAND_SIZE);
+        if (boardSize >= 0) System.arraycopy(cards, 0, playerCards, HAND_SIZE, boardSize);
 
         return new InfoSet(HandInfo.getHandInfo(playerCards), simplifyBetSize(1-player), player,
                 boardSize, isExchange, getAllowedBetSize());
@@ -219,7 +217,7 @@ public class TrainingState implements Cloneable {
             hand1[MAX_BOARD_CARDS + j] = cards[cardIndex[1] + j];
         }
 
-        int compare = HandUtil.compareTo(hand0, hand1);
+        int compare = HandUtility.compareTo(hand0, hand1);
         if (compare == 0) {
             return 2;
         } else if (compare > 0) {
