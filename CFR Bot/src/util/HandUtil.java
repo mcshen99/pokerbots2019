@@ -37,7 +37,7 @@ public class HandUtil {
             }
 
             // Not possible to have a better number hand.
-            return new HandStrength(HandQuality.FLUSH, getFlushHand(cards, flush));
+            return new HandStrength(HandQuality.FLUSH, getFlushHand(cards, flush)); // quads??
         }
     }
 
@@ -153,7 +153,15 @@ public class HandUtil {
     public static HandQuality getQuality(int[] cards) {
         try {
             if (cards.length < 5) {
-                return cards[0] == cards[1] ? HandQuality.PAIR : HandQuality.HIGH;
+                if (cards[0] == cards[1]) {
+                    if (Card.getNumber(cards[0]) < 9) {
+                        return HandQuality.PAIR_NUM;
+                    } else {
+                        return HandQuality.PAIR_AKQJ;
+                    }
+                } else {
+                    return getBestHigh(cards);
+                }
             }
 
             int[] suits = suitFrequencies(cards);
@@ -162,11 +170,11 @@ public class HandUtil {
             boolean straight = hasStraight(numbers);
             if (flush < 0) {
                 if (straight) {
-                    HandQuality numberHand = getBestNumberHandQuality(numbers);
+                    HandQuality numberHand = getBestNumberHandQuality(numbers, cards);
 
                     return HandQuality.values()[Math.max(numberHand.ordinal(), HandQuality.STRAIGHT.ordinal())];
                 } else {
-                    return getBestNumberHandQuality(numbers);
+                    return getBestNumberHandQuality(numbers, cards);
                 }
             } else {
                 if (straight && hasStraightFlush(cards, flush)) {
@@ -189,7 +197,18 @@ public class HandUtil {
         return freq;
     }
 
-    private static HandQuality getBestNumberHandQuality(int[] freqs) {
+    private static HandQuality getBestHigh(int[] cards) {
+        int num = Math.max(Card.getNumber(cards[0]), Card.getNumber(cards[1]));
+        if (num < 9) {
+            return HandQuality.HIGH_NUM;
+        } else if (num < 11) {
+            return HandQuality.HIGH_QJ;
+        } else {
+            return HandQuality.HIGH_AK;
+        }
+    }
+
+    private static HandQuality getBestNumberHandQuality(int[] freqs, int[] cards) {
         int max = 0;
         for (int freq : freqs) {
             if (freq > max) {
@@ -198,7 +217,7 @@ public class HandUtil {
         }
 
         if (max == 1) {
-            return HandQuality.HIGH;
+            return getBestHigh(cards);
         }
 
         int[] freqCounts = new int[5];
@@ -208,7 +227,18 @@ public class HandUtil {
 
         if (max == 2) {
             if (freqCounts[2] == 1) {
-                return HandQuality.PAIR;
+                int pair0 = freqs[Card.getNumber(cards[0])] > 1 ? Card.getNumber(cards[0]) : -1;
+                int pair1 = freqs[Card.getNumber(cards[1])] > 1 ? Card.getNumber(cards[1]) : -1;
+                int bestPair = Math.max(pair0, pair1);
+                if (bestPair > 0) {
+                    if (bestPair < 9) {
+                        return HandQuality.PAIR_NUM;
+                    } else {
+                        return HandQuality.PAIR_AKQJ;
+                    }
+                } else {
+                    return getBestHigh(cards);
+                }
             }
             return HandQuality.TWO_PAIR;
         }

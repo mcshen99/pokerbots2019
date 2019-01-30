@@ -1,8 +1,6 @@
 package util;
 
 public enum HandQuality {
-    HIGH, PAIR, TWO_PAIR, TRIPS, STRAIGHT, FLUSH, FULL_HOUSE, QUADS, STRAIGHT_FLUSH
-    // TODO: maybe add for high ak, qj, num
-    //  make it so that hand must include your cards
+    HIGH, HIGH_NUM, HIGH_QJ, HIGH_AK, PAIR, PAIR_NUM, PAIR_AKQJ, TWO_PAIR, TRIPS, STRAIGHT, FLUSH, FULL_HOUSE, QUADS, STRAIGHT_FLUSH
     // No one cares about royals.
 }

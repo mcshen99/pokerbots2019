@@ -86,7 +86,7 @@ public class Trainer {
     }
 
     public static void main(String[] args) throws IOException {
-        int iterations = 1000;
+        int iterations = 5000;
         new Trainer().train(iterations);
         PrintWriter out = new PrintWriter(new FileWriter("trainingData.txt"));
         out.print(tree.toString());
